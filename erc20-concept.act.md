@@ -161,10 +161,7 @@ storage
 
   allowance[CALLER][usr] => amt
 
-logs
-
-  Approval(CALLER, usr, wad);
-
+logs Approval(CALLER, usr, wad)
 returns true
 ```
 
