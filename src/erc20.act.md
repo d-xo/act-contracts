@@ -4,9 +4,10 @@ The following is an executable specification for a simple token conforming to th
 
 The spec currently uses the following (as yet) unimplemented features of the `act` language:
 
-- built in type bound constants (e.g. `MAX_UINT`)
+- min / max operators for types (e.g. `max(uint256)`)
 - block local variable binding using `let`
 - specification of logging behaviour using the `logs` block
+- single branch case statements
 - ommision of variable declarations for storage reads (i.e. if you just read from a storage var, you
     don't need to declare it in the `storage` block)
 - `pre` and `post` operators in the `ensures` block
@@ -64,39 +65,29 @@ The following postconditions must hold:
 
 ```act
 behaviour transfer of Token
-interface transfer(address dst, uint amt)
+interface transfer(address dst, uint amt) returns bool
 
-iff
+iff in range uint256
 
-  CALLVALUE == 0
-  amt <= balanceOf[CALLER]
+  balanceOf[CALLER] - amt
 
 case CALLER =/= dst:
 
-  iff
-
-     balanceOf[dst] + amt <= MAX_UINT
+  iff balanceOf[dst] + amt <= max(uint)
 
   storage
 
      balanceOf[CALLER] => balanceOf[CALLER] - amt
      balanceOf[dst]    => balanceOf[dst] + amt
 
-  returns true
-
-case CALLER == dst:
-
-  returns true
-
-logs
-
-  Transfer(CALLER, dst, amt)
-
 ensures
 
   pre(balanceOf[dst]) <= post(balanceOf[dst])
   pre(balanceOf[CALLER]) >= post(balanceOf[CALLER])
   post(balanceOf[dst]) - pre(balanceOf[dst]) == pre(balanceOf[CALLER]) - post(balanceOf[CALLER])
+
+logs Transfer(CALLER, dst, amt)
+returns true
 ```
 
 ### `transferFrom`
@@ -120,50 +111,26 @@ The following postconditions must hold:
 
 ```act
 behaviour transferFrom of Token
-interface transferFrom(address src, address dst, uint amt)
+interface transferFrom(address src, address dst, uint amt) returns bool
 
-iff
+iff amt <= balanceOf[src]
 
-  CALLVALUE == 0
-  amt <= balanceOf[src]
-  src =/= dst => balanceOf[dst] + amt <= MAX_UINT
-  CALLER =/= src => amt <= allowance[src][CALLER]
+case src =/= dst:
 
-case src =/= dst
+  iff balanceOf[dst] + amt <= MAX_UINT
 
-  case CALLER == src:
+  storage
+
+    balanceOf[src] => balanceOf[src] - amt
+    balanceOf[dst] => balanceOf[dst] + amt
+
+  case CALLER =/= src and allowance[src][CALLER] < max(uint256):
+
+    iff amt <= allowance[src][CALLER]
 
     storage
 
-      balanceOf[src] => balanceOf[src] - amt
-      balanceOf[dst] => balanceOf[dst] + amt
-
-    returns true
-
-  case CALLER =/= src:
-
-    case allowance[src][CALLER] == MAX_UINT:
-
-      storage
-
-         balanceOf[src] => balanceOf[src] - amt
-         balanceOf[dst] => balanceOf[dst] + amt
-
-      returns true
-
-    case allowance[src][CALLER] < MAX_UINT:
-
-      storage
-
-        allowance[src][CALLER] => allowance[src][CALLER] - amt
-        balanceOf[src]         => balanceOf[src] - amt
-        balanceOf[dst]         => balanceOf[dst] + amt
-
-      returns true
-
-case src == dst:
-
-  returns true
+      allowance[src][CALLER] => allowance[src][CALLER] - amt
 
 ensures
 
@@ -175,6 +142,9 @@ ensures
   pre(srcBal) >= post(srcBal)
   pre(dstBal) <= post(dstBal)
   pre(srcBal) - post(srcBal) == post(dstBal) - pre(dstBal)
+
+logs Transfer(src, dst, amt)
+returns true
 ```
 
 ### `approve`
@@ -185,7 +155,7 @@ ensures
 
 ```act
 behaviour approve of ERC20
-interface approve(address usr, uint amt)
+interface approve(address usr, uint amt) returns bool
 
 storage
 
