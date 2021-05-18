@@ -53,7 +53,7 @@ invariants
 
 ### `transfer`
 
-The `transfer` method transfers `value` tokens from the caller to the `dst` address.
+The `transfer` method transfers `amt` tokens from the caller to the `dst` address.
 `transfer` will revert on over / underflow and always returns `true` if the transfer has succeeded.
 
 The following postconditions must hold:
