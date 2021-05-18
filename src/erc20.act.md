@@ -2,6 +2,18 @@
 
 The following is an executable specification for a simple token conforming to the `ERC20` standard.
 
+The spec currently uses the following (as yet) unimplemented features of the `act` language:
+
+- built in type bound constants (e.g. `MAX_UINT`)
+- block local variable binding using `let`
+- specification of logging behaviour using the `logs` block
+- ommision of variable declarations for storage reads (i.e. if you just read from a storage var, you
+    don't need to declare it in the `storage` block)
+- `pre` and `post` operators in the `ensures` block
+- nested case expressions
+- case local `iff`
+- a `sum` operator for mappings
+
 ## `constructor`
 
 We define first the data and invariants of the contract. There are two critical invariants:
