@@ -1,9 +1,11 @@
 .PHONY: all test clean prove
 
 specs=$(wildcard src/*.act.md)
+concept=src/erc20-concept.act.md
+working=$(filter-out $(concept), $(specs))
 
 build :; dapp build
-prove :  $(specs:=.prove)
+prove : $(working:=.prove)
 clean :
 	dapp clean
 	rm -rf .make
