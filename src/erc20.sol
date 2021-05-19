@@ -28,9 +28,7 @@ contract ERC20 {
         return transferFrom(msg.sender, dst, amt);
     }
     function transferFrom(address src, address dst, uint amt) virtual public returns (bool) {
-        if (src != msg.sender && allowance[src][msg.sender] != type(uint).max) {
-            allowance[src][msg.sender] = allowance[src][msg.sender] - amt;
-        }
+        allowance[src][msg.sender] = allowance[src][msg.sender] - amt;
         balanceOf[src] = balanceOf[src] - amt;
         balanceOf[dst] = balanceOf[dst] + amt;
         emit Transfer(src, dst, amt);

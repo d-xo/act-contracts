@@ -86,10 +86,10 @@ interface transferFrom(address src, address dst, uint amt)
 
 iff
 
-  amt <= balanceOf[CALLER]
-  src    =/= dst => balanceOf[dst] + amt < 2^256
-  CALLER =/= src => 0 <= allowance[src][CALLER] - amt
   CALLVALUE == 0
+  amt <= balanceOf[CALLER]
+  src =/= dst => balanceOf[dst] + amt < 2^256
+  CALLER =/= src => 0 <= allowance[src][CALLER] - amt
 
 case src =/= dst and CALLER == src:
 
